@@ -15,4 +15,6 @@ made using the homogrphay and canny edge detection for frames stablization and m
 
 3). FIRE DETECTION AND PERSON AND VECHICLE DETECTION 
 
-I have attached the the custom weights of the 
+I have attached the the custom weights of the fire detection and the dataset of the vechile detection and person detection 
+
+
