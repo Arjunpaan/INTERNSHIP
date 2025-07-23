@@ -1,7 +1,7 @@
 
 1).  GOOGE CLOUD SERVICE
 
-FOR STREAMING I HAVE ATTACHED THE FILE CLICK IT 
+file is attached above 
 
 
 
