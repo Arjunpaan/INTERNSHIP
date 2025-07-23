@@ -1,0 +1,183 @@
+
+
+
+
+
+firstly 
+we weere inside the project directory insidde ether 
+
+gsutil mb gs://cdspace-stream-1
+*********************************************************************************
+set the cors
+
+echo '[{"origin": ["https://shaka-player-demo.appspot.com/"], "responseHeader": ["Content-Type", "Range"], "method": ["GET", "HEAD"], "maxAgeSeconds": 3600}]' > cors.json
+
+**********************************************************************************
+
+then set the 
+
+gcloud storage buckets update gs://cdspace-stream-1 --cors-file=cors.json
+
+*********************************************************************
+sudo apt install ffmpeg
+
+**********************************************************************
+crete input resource ok 
+
+curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "RTMP_PUSH"}' \
+  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/inputs?inputId=live-input-01"
+
+********************************************************************
+crete the channel ok 
+********************************************************************
+echo '{
+  "inputAttachments": [
+    {
+      "key": "my-input",
+      "input": "projects/310041569320/locations/asia-south1/inputs/live-input-01"
+    }
+  ],
+  "output": {
+    "uri": "gs://cdspace-stream-1/"
+  },
+  "elementaryStreams": [
+    {
+      "key": "es_video",
+      "videoStream": {
+        "h264": {
+          "widthPixels": 1280,
+          "heightPixels": 720,
+          "frameRate": 30,
+          "bitrateBps": 3000000
+        }
+      }
+    },
+    {
+      "key": "es_audio",
+      "audioStream": {
+        "codec": "aac",
+        "bitrateBps": 128000,
+        "channelCount": 2,
+        "sampleRateHertz": 44100
+      }
+    }
+  ],
+  "muxStreams": [
+    {
+      "key": "mux_video",
+      "container": "fmp4",
+      "elementaryStreams": ["es_video"],
+      "segmentSettings": { "segmentDuration": "6s" }
+    },
+    {
+      "key": "mux_audio",
+      "container": "fmp4",
+      "elementaryStreams": ["es_audio"],
+      "segmentSettings": { "segmentDuration": "6s" }
+    }
+  ],
+  "manifests": [
+    {
+      "fileName": "main.mpd",
+      "type": "DASH",
+      "muxStreams": ["mux_video", "mux_audio"],
+      "maxSegmentCount": 5,
+      "segmentKeepDuration": "60s",
+      "key": "manifest_dash"
+    }
+  ],
+  "timecodeConfig": { "source": "MEDIA_TIMESTAMP" }
+}' > channel_config.json
+
+****************************************************************************
+
+and then set 
+
+
+curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  -d @channel_config.json \
+  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels?channelId=main-channel-01"
+
+
+****************************************************************************
+
+
+then impoprtant check the rtmp uri used to send the input stream to the google cloud ok 
+
+
+curl -X GET \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/inputs/live-input-01"
+
+
+*******************************************************************************
+we will get the 
+
+ "uri": "rtmp://34.100.138.180/live/84da768b-eb16-4797-a9a9-ff779d185171",
+from the above command ok 
+******************************************************************************
+
+then check whether the streamingstate   what is it whther its stopped awaiting input or streaming 
+
+
+curl -X GET   -H "Authorization: Bearer $(gcloud auth print-access-token)"   "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels/main-channel-01"
+
+******************************************************************
+
+and for start and stop 
+
+
+curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels/main-channel-01:start"
+
+curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels/main-channel-01:stop"
+
+****************************************************************
+
+
+
+
+
+DELETE THE CHANNEL INPUT RESOURCE AND BUCKET AND REPEAT THE PROCESS OK 
+
+
+curl -X DELETE \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels/main-channel-01"
+  
+  
+curl -X DELETE \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/inputs/live-input-01"
+
+
+
+
+
+
+
+*************************************************************************
+
+DELTE EVERYTHING IN THE THE BUCEKT 
+
+gsutil -m rm -r gs://cdspace-stream-1/**
+
+************************************************************************
+
+AND THEN DELETE THE BUCKET PROPERLY OK
+
+gsutil rb -f gs://cdspace-stream-1
+
+
+***********************************************************************
+
+
+
