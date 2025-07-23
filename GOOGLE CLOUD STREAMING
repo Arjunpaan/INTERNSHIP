@@ -1,28 +1,87 @@
 
 
 
+TO STREAM THE INPUT STREAM TO THE USERS 
+
+he have to crete everything from scratch and delte them all and then start from scratch to stream the curent input stream 
+
+in step 9
+charges is applied only for the channel enabling anything will not charge only this when we start the channel charges  will start appling 
+and when we stop it will stop the charges so that is important to stop the channel 
 
 
-firstly 
-we weere inside the project directory insidde ether 
 
-gsutil mb gs://cdspace-stream-1
-*********************************************************************************
-set the cors
+firstly login into the google cloudaccount then 
+go to console right  top corner 
+they will show the spend and after clicking console at same spot therre is the option of the google cloud shell open that thats free no charges
+after going inside that 
+
+in case if you are inside kaustab bhaiya account then no need to create addtional project there is the projects option there is the cdspace-stream is crated no need to create the addtional project 
+when you click to the project dashboard you can clerly see the the 
+
+project info section like this 
+
+Project name
+cdspace-stream
+Project number
+310041569320
+Project ID
+canvas-hybrid-466110-t1 
+
+so this are usefull 
+
+incase if no project is created then crete new project 
+
+so now in the google cloud  shell 
+
+*************************************************************************************************************************************************************************************
+step 1
+we need to move inside the project directory in the gcs(google cloud shell)
+
+gcloud config set project YOUR_PROJECT_ID
+
+project id insdie the dashborad ex  (canvas-hybrid-466110-t1 )
+
+
+**************************************************************************************************************************************************************************
+step 2
+after moving inside the project directory create the bucket where the input stream will be stored 
+
+gcloud storage buckets create gs://cdspace-stream-1 
+
+cdspace-stream-1  is the bucket name 
+**********************************************************************************************************************************************
+
+step 3
+
+and then enable the livestream api service which we need to use and the storage cloud servces 
+
+gcloud services enable livestream.googleapis.com
+and
+gcloud services enable storage.googleapis.com
+
+
+
+*****************************************************************************************************************************
+step 4
+
+in the gcs
+
+Create the CORS Configuration File using below (this will allow the webservers in which user can see the stream to access the files which is availble in the bucket and this cors file is only for shaka player)
 
 echo '[{"origin": ["https://shaka-player-demo.appspot.com/"], "responseHeader": ["Content-Type", "Range"], "method": ["GET", "HEAD"], "maxAgeSeconds": 3600}]' > cors.json
 
-**********************************************************************************
 
-then set the 
+then set the CORS file   google cloud shell only run this 
 
 gcloud storage buckets update gs://cdspace-stream-1 --cors-file=cors.json
 
-*********************************************************************
-sudo apt install ffmpeg
 
-**********************************************************************
-crete input resource ok 
+*****************************************************************************************************************************
+step 5
+
+create input resource which is used to push our input stream to the bucket run the below command for our project id and region for mumbia we use the asia-south 1 and input resource named as input-01 
+this will create a uri 
 
 curl -X POST \
   -H "Authorization: Bearer $(gcloud auth print-access-token)" \
@@ -30,9 +89,33 @@ curl -X POST \
   -d '{"type": "RTMP_PUSH"}' \
   "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/inputs?inputId=live-input-01"
 
-********************************************************************
-crete the channel ok 
-********************************************************************
+
+then impoprtant check the rtmp uri used to send the input stream to the google cloud thee above comand will crete uri and below command wil help to see the uri 
+
+
+curl -X GET \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/inputs/live-input-01"
+
+
+we will get the uri like below  hold it 
+
+ "uri": "rtmp://34.100.138.180/live/84da768b-eb16-4797-a9a9-ff779d185171",
+from the above command ok 
+
+
+******************************************************************************************************************************************************************************
+
+step 6
+
+now we had to chrete the channel which is the very important thing
+beacuse of this only charges are implied firstly we had to crete new channel 
+first run below   configurationfile for channel specific our   our own project input resourse 
+below in configuration file you can see the details inside the below configuration file 
+
+
+
+
 echo '{
   "inputAttachments": [
     {
@@ -92,9 +175,10 @@ echo '{
   "timecodeConfig": { "source": "MEDIA_TIMESTAMP" }
 }' > channel_config.json
 
-****************************************************************************
+***********************************************************************************************************************************************************************
 
-and then set 
+step 7
+after the configuration file of the channel  use that file to crete the channel with the help of below command this is specific for our project only project no. and location are set for this 
 
 
 curl -X POST \
@@ -104,30 +188,55 @@ curl -X POST \
   "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels?channelId=main-channel-01"
 
 
-****************************************************************************
+****************************************************************************************************************************************************************************
+*********************************************************************************************************************************************************************************
+
+NOW 
+FIRSTLY 
+PROJECT IS CREATED INSIDE PROJECT 
+A STORAGE BUCKET IS THERE 
+CORS FILE IS SET 
+INPUT RESOURCE IS CREATED 
+CHANNEL IS CREATED
 
 
-then impoprtant check the rtmp uri used to send the input stream to the google cloud ok 
+
+****************************************************************************************************************************************************************************
+****************************************************************************************************************************************************************************
+
+STEP 8
+
+NOW 
+GO INSIDE THE BUCKET THEN 
+GO TO THE PERMISSION 
+THEN CLICK GRANT ACCESS 
+INSIDE THAT IN NEW PRINCIPLE 
+TYPE OR SELECT ALLUSERS   
+AND THEN IN SELECT THE ROLES  
+SET THE STORAGE OBJECT VIEWER 
+THEN SAVE THAT 
 
 
-curl -X GET \
-  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
-  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/inputs/live-input-01"
 
 
-*******************************************************************************
-we will get the 
-
- "uri": "rtmp://34.100.138.180/live/84da768b-eb16-4797-a9a9-ff779d185171",
-from the above command ok 
-******************************************************************************
-
-then check whether the streamingstate   what is it whther its stopped awaiting input or streaming 
+this thing will set the public url ok 
 
 
-curl -X GET   -H "Authorization: Bearer $(gcloud auth print-access-token)"   "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels/main-channel-01"
 
-******************************************************************
+
+
+
+
+****************************************************************************************************************************************************************************
+
+step 9
+
+now in thegoogle cloud shell we have created the channel na 
+so the
+
+charges is applied only for the channel enabling anything will not charge only this when we start the channel charges  will start appling 
+and when we stop it will stop the charges so that is important to stop the channel 
+
 
 and for start and stop 
 
@@ -140,10 +249,87 @@ curl -X POST \
   -H "Authorization: Bearer $(gcloud auth print-access-token)" \
   "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels/main-channel-01:stop"
 
+
+******************************************************************
+
+
+****************************************************************************************************************************************************************************
+
+
+******************************************************************
+
+
+so after starting the channel run this below command to see whether its stopped or waiting fro input or streaming 
+serch for this word after starting the chanel  streamingstate   
+this isjust for checking nothing important 
+
+
+curl -X GET   -H "Authorization: Bearer $(gcloud auth print-access-token)"   "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels/main-channel-01"
+
+******************************************************************
+
+
+****************************************************************************************************************************************************************************
+
+
 ****************************************************************
 
 
+step 10
 
+when the state is awaiting input then run the this below command in your laptop terminal to send the input stream to the google cloud such 
+
+remember the uri from the input resource which is used to send it will change everytime so you have to update this below comand whatever  the uri will be 
+
+
+
+ffmpeg -f v4l2 -input_format mjpeg -framerate 30 -video_size 1280x720 -i /dev/video2   -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 /
+-c:v libx264 -preset veryfast -r 30 -g 60 -pix_fmt yuv420p   -c:a aac -ar 44100 -b:a 128k   -f flv rtmp://34.100.138.180/live/84da768b-eb16-4797-a9a9-ff779d185171
+
+this will send the stream remember we had to send audio and video thats why added the audio also 
+
+******************************************************************
+
+
+****************************************************************************************************************************************************************************
+
+
+******************************************************************
+
+
+and now chek the bucket so we used the MPEG FORMAT SO WE WILL GET THE 
+MAIN.mpd
+mux audio 
+mux video 
+
+so in main .mpd there is the publec url copy url 
+
+go to the shaka player demo 
+custom contetn 
+
+click plus sign
+
+paste url 
+write anyname 
+save 
+and then play
+
+
+
+
+****************************************************************************************************************************************************************************
+after that 
+stop the cchannel to stop charges 
+and we will delete the channel input resource bucketnot project only 3 things 
+
+
+
+curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  "https://livestream.googleapis.com/v1/projects/310041569320/locations/asia-south1/channels/main-channel-01:stop"
+
+
+after stop check whther its stop or not 
 
 
 DELETE THE CHANNEL INPUT RESOURCE AND BUCKET AND REPEAT THE PROCESS OK 
@@ -162,15 +348,9 @@ curl -X DELETE \
 
 
 
-
-
-*************************************************************************
-
 DELTE EVERYTHING IN THE THE BUCEKT 
 
 gsutil -m rm -r gs://cdspace-stream-1/**
-
-************************************************************************
 
 AND THEN DELETE THE BUCKET PROPERLY OK
 
